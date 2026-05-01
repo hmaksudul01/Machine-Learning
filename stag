@@ -1,82 +1,67 @@
-import random
-import json
+#include <bits/stdc++.h>
+using namespace std;
 
-NUM_SIMULATIONS = 100
-NUM_ROUNDS = 10
-RISK_LEVELS = [10, 25, 40, 55, 70, 85]
+int main() {
+    srand(time(0)); // random seed
 
-STAG = "STAG"
-HARE = "HARE"
+    int simulations = 100;
+    int rounds = 10;
 
+    vector<int> riskLevels = {10, 25, 40, 55, 70, 85};
 
-def get_choice(risk):
-    stag_prob = (100 - risk) / 100
-    return STAG if random.random() < stag_prob else HARE
+    cout << "Risk\tStag%\tHare%\tAvg Payoff\n";
+    cout << "--------------------------------------\n";
 
+    for (int risk : riskLevels) {
 
-def play_round(a, b):
-    if a == STAG and b == STAG:
-        return 10, 10
-    elif a == HARE and b == HARE:
-        return 7, 7
-    elif a == STAG and b == HARE:
-        return 0, 7
-    else:
-        return 7, 0
+        int totalStag = 0;
+        int totalHare = 0;
+        double totalPayoff = 0;
 
+        for (int i = 0; i < simulations; i++) {
+            for (int j = 0; j < rounds; j++) {
 
-def run_simulation(risk):
-    total_stag = 0
-    total_hare = 0
-    total_payoff = 0
+                // random number between 0 to 1
+                double r1 = (double)rand() / RAND_MAX;
+                double r2 = (double)rand() / RAND_MAX;
 
-    for _ in range(NUM_SIMULATIONS):
-        for _ in range(NUM_ROUNDS):
+                // decision making
+                string A = (r1 < (100 - risk) / 100.0) ? "STAG" : "HARE";
+                string B = (r2 < (100 - risk) / 100.0) ? "STAG" : "HARE";
 
-            a = get_choice(risk)
-            b = get_choice(risk)
+                int payoffA, payoffB;
 
-            pa, pb = play_round(a, b)
+                // payoff rules
+                if (A == "STAG" && B == "STAG") {
+                    payoffA = 10; payoffB = 10;
+                }
+                else if (A == "HARE" && B == "HARE") {
+                    payoffA = 7; payoffB = 7;
+                }
+                else if (A == "STAG" && B == "HARE") {
+                    payoffA = 0; payoffB = 7;
+                }
+                else {
+                    payoffA = 7; payoffB = 0;
+                }
 
-            if a == STAG:
-                total_stag += 1
-            else:
-                total_hare += 1
+                // count choices
+                if (A == "STAG") totalStag++;
+                else totalHare++;
 
-            total_payoff += (pa + pb) / 2
+                // average payoff
+                totalPayoff += (payoffA + payoffB) / 2.0;
+            }
+        }
 
-    total_choices = total_stag + total_hare
+        int totalChoices = totalStag + totalHare;
 
-    return {
-        "stag_percentage": round((total_stag / total_choices) * 100, 2),
-        "hare_percentage": round((total_hare / total_choices) * 100, 2),
-        "average_payoff": round(total_payoff / total_choices, 2)
+        double stagPercent = (double)totalStag / totalChoices * 100;
+        double harePercent = (double)totalHare / totalChoices * 100;
+        double avgPayoff = totalPayoff / totalChoices;
+
+        cout << risk << "%\t" << stagPercent << "\t" << harePercent << "\t" << avgPayoff << "\n";
     }
 
-
-def main():
-    results = {}
-
-    print("\nSTAG HUNT EXPERIMENT RESULTS\n")
-    print(f"{'Risk':<10} {'STAG %':<10} {'HARE %':<10} {'Avg Payoff':<10}")
-    print("-" * 45)
-
-    for risk in RISK_LEVELS:
-        stats = run_simulation(risk)
-        results[risk] = stats
-
-        print(
-            f"{risk}%{'':<6} "
-            f"{stats['stag_percentage']}%{'':<5} "
-            f"{stats['hare_percentage']}%{'':<5} "
-            f"{stats['average_payoff']}"
-        )
-
-    with open("stag_hunt_results.json", "w") as f:
-        json.dump(results, f, indent=2)
-
-    print("\nResults saved to stag_hunt_results.json")
-
-
-if __name__ == "__main__":
-    main()
+    return 0;
+}
